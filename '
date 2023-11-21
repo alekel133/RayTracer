@@ -1,0 +1,337 @@
+#include "Parser.h"
+#include "Primitive.h"
+#include "MathUtils.h"
+
+void getTransform(int &token, Primitive *prim){
+  int cont = 1; 
+  while(token == TOK_TX || token == TOK_TY || token == TOK_TZ || token == TOK_RX || token == TOK_RY || token == TOK_RZ || token == TOK_SC) {
+    if(!cont) break;
+    switch(token) {
+        case TOK_TX: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after TX." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid translationn format: "<< yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = translateX(stod(yytext)) * prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+          }
+          break;
+        }
+
+        case TOK_TY: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after TY." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid translationn format: " << yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = translateY(stod(yytext)) * prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+          }
+          break;
+        }
+
+        case TOK_TZ: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after TZ." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid translationn format: "<< yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = translateZ(stod(yytext))*prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+          }
+          break;
+        }
+
+        case TOK_RX: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after RX." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid rotation format: " << yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = rotateX(stod(yytext))*prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+          }
+          break;
+        }
+
+        case TOK_RY: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after RY." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid translationn format: " << yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = rotateY(stod(yytext))*prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+          }
+          break;
+        }
+
+        case TOK_RZ: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after RZ." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid translationn format: " << yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = rotateZ(stod(yytext))*prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+         }
+        case TOK_SC: {
+          token = yylex();
+          if(token != TOK_COLON) {
+            cout << "Error, no colon after RZ." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          token = yylex();
+          if(token != TOK_FLOAT && token != TOK_INT) {
+            cout << "Error, invalid translationn format: " << yytext << "." << endl;
+            exit(EXIT_FAILURE);
+          }
+          
+          prim->mat = rotateZ(stod(yytext))*prim->mat;
+
+          token = yylex();
+          if(token != TOK_COMMA) {
+            if(token == TOK_SEMI) {
+              cont = 0;
+            }
+            else {
+              cout << "Error, expecte ',' or ';' in transformation list." << endl;
+              exit(EXIT_FAILURE);
+            }
+          }
+        }
+        
+        default:
+          cout << "Error, invalid transform." << endl;
+          exit(EXIT_FAILURE);
+      } 
+    }
+    token = yylex();
+  }
+}
+
+int parseFile(char* filename, ParseData &data ) {
+  int token;
+  int cont = 1;
+
+  yyin = fopen(filename, "r");
+
+  yyout = stdout;
+
+  token = yylex();
+  while(true) {
+    char* token_str;
+
+    if(token == TOK_EOF) {
+      break;
+    }
+
+    // Parse based on token values
+    switch(token){
+
+      // Get Height Data, make sure input file matches expected pattern;
+      case TOK_HEIGHT:{
+        token = yylex();
+        if(token != TOK_COLON) {
+          cout << "Error, no height specified." << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        token = yylex();
+        if(token != TOK_INT) {
+          cout << "Error, invalid height format" << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        data.height = stoi(yytext);
+        
+        token = yylex();
+        if(token != TOK_SEMI) {
+            cout << "Error, expected ';' after assignement.";
+            exit(EXIT_FAILURE);
+        }
+        break;
+      }
+
+      // Get Width Data
+      case TOK_WIDTH:{
+        token = yylex();
+        if(token != TOK_COLON) {
+          cout << "Error, no width specified." << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        token = yylex();
+        if(token != TOK_INT) {
+          cout << "Error, invalid width format" << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        data.width = stoi(yytext);
+        
+        token = yylex();
+        if(token != TOK_SEMI) {
+            cout << "Error, expected ';' after assignement.";
+            exit(EXIT_FAILURE);
+        }
+        break;
+      }
+
+      // Get FOV data
+      case TOK_FOV:{
+        token = yylex();
+        if(token != TOK_COLON) {
+          cout << "Error, no fov specified." << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        token = yylex();
+        if(token != TOK_INT) {
+          cout << "Error, invalid fov format" << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        data.FOV = stoi(yytext);
+        
+        token = yylex();
+        if(token != TOK_SEMI) {
+            cout << "Error, expected ';' after assignement.";
+            exit(EXIT_FAILURE);
+        }
+        break;
+      }
+
+      case TOK_CAMERA: {
+        data.camera = new Camera;
+
+        token = yylex();
+        if(token == TOK_SEMI) {
+          continue;
+        }
+        
+        if(token != TOK_OPENBRACK) {
+          cout << "Error, expected ';' or transform data after 'Camera'." << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        token = yylex();
+        if(token != TOK_TRANS) {
+          cout << "Erro, expect transform data in Camera definition." << endl;
+          exit(EXIT_FAILURE);
+        }
+
+
+        token = yylex();
+        if(token != TOK_COLON) {
+          cout << "Error, expected ':' after 'transform'." << endl;
+          exit(EXIT_FAILURE);
+        }
+
+        token = yylex();
+        
+        // Get Transform Data
+        getTransform(token, data.camera);
+        }
+      }
+    token = yylex();
+  }
+  return 0;
+}

@@ -1,51 +1,66 @@
 #pragma once
 #ifndef PRIMITIVE_H
 #define PRIMITIVE_H
-#include <Eigen/Dense>
 #include <ostream>
+#include <string>
+#include <float.h>
+#include "eigen-3.4.0/Eigen/Dense"
 #include "Ray.h"
 
+using std::string;
+using namespace Eigen;
+
+typedef struct {
+  int *diffuse;
+  int *specular;
+  int shine;
+} Material;
+
 typedef struct{
-	int t;
-} hit;
+	double t;
+  Vector4d normal;
+  Material material;
+} Hit;
 
 typedef struct{
 	Vector4d coord;	
-	double *color;
+	int *diffuse;
+	int *specular;
 }Vertex;
+
+typedef struct{
+  int vertices[3];
+}Face;
 
 class Primitive {
 	public:
 		// Data for recursive transform application
-		char * name;
+		string name;
 		Primitive *parent;
 		Primitive **children;
-		Matrix4d mat;
-		double *color;
+    Material material;
+    Matrix4d mat;
+    
 
 		// Virtual class functions
 		Primitive();
 		~Primitive();
 		// Virtual Functions for Ray Tracing and Ray Acceleration
-		bool isHit(Ray &ray, hit &hit);
-	   Matrix4d getLocal();
-	   Matrix4d getWorld();
+		virtual bool isHit(Ray *ray, Hit &hit) = 0;
+	  Matrix4d getLocal();
+	  Matrix4d getWorld();
+    virtual void print(std::ostream &os) = 0;
 		friend std::ostream &operator << (std::ostream &os, Primitive &prim);
 };
 
 class Camera: public Primitive {
 	public:
-		// Data for Camera Directions and Ray Generation
-		Vector4d eye;
-		Vector4d direction;
-		Vector4d up;
-		Vector4d side;
-
 		// Camera, like all Prmitives, is initialized at the origin, and moved by a series of transformations
 		Camera(void);
 		
 		// Function for outputing the data stored in the Camera object.
-	   friend std::ostream &operator << (std::ostream &os, Camera &cam);
+     bool isHit(Ray *ray, Hit &hit) override;
+     void print(std::ostream &os) override;
 };
 
 class Sphere: public Primitive {
@@ -54,52 +69,50 @@ class Sphere: public Primitive {
 		Vector4d origin;
 		
 		Sphere();
-		Sphere(double *color);
-		bool isHit(Ray &ray, hit &hit);
-		friend std::ostream &operator<<(std::ostream &os, Sphere &sphere);
+		Sphere(Material &material);
+		bool isHit(Ray *ray, Hit &hit) override;
+    void print(std::ostream &os) override;
 };
 
 class Plane: public Primitive {
 	public:
-		Vector4d origin;
-		Vector4d normal;
-		
-		Plane();
-		bool isHit(Ray &ray, hit &hit);
-		friend std::ostream &operator<<(std::ostream &os, Plane &plane);
-};
-
-class Triangle:public Primitive {
-	Vertex *points[3];
-
-	bool isHit(Ray &ray, hit &hit);
-	friend std::ostream &operator<<(std::ostream &os, Triangle &tri);
+		bool isHit(Ray *ray, Hit &hit) override;
+    void print(std::ostream &os) override;
 };
 
 class Mesh: public Primitive {
-	Vertex *vertices;
-	Triangle *triangles;
+  public:
+    int vSize, fSize;
+    std::vector<Vertex> vertices;
+    std::vector<Face> faces;
 
-	bool isHit(Ray &ray, hit &hit);
-	friend std::ostream &operator<<(std::ostream &os, Mesh &mesh);
+    Mesh();
+    ~Mesh();
+    bool isHit(Ray *ray, Hit &hit) override;
+    void print(std::ostream &os) override;
 };
 
 class AABB: public Primitive {
-	Vector4d maxPoint;
-	Vector4d minPoint;
-	float clip;
+  public:
+    Vector4d maxPoint;
+    Vector4d minPoint;
+    float clip;
 
-	bool isHit(Ray &ray, hit &hit);
-	friend std::ostream &operator<<(std::ostream &os, Mesh &mesh);
-	
+    bool isHit(Ray *ray, Hit &hit) override;
+    void print(std::ostream &os) override;
+    
 };
 
 class BVH: public Primitive {
-	AABB *root;
-	AABB **children;
-	float clip;
+  public:
+    AABB *root;
+    AABB **children;
+    float clip;
 
-	bool isHit(Ray &ray, hit &hit);
-	friend std::ostream &operator<<(std::ostream &os, Mesh &mesh);
+    bool isHit(Ray *ray, Hit &hit) override;
+    void print(std::ostream &os) override;
 };
+
+Ray *generateRay(Camera &camera, int &iWidth, int &iHeight, int &i, int &j);
+
 #endif

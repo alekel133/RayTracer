@@ -1,0 +1,159 @@
+#include "Primitive.h"
+#include <iostream>
+
+//~~~~~~~~~~~~~~~~~~~~~~~ Primitive ~~~~~~~~~~~~~~~~~~~~~~~~~//
+Primitive::Primitive() {
+  this->name = "None";
+	this->parent = (Primitive *) malloc(sizeof(Primitive *));
+	this->children = nullptr;
+	this->color = (int *) malloc(3*sizeof(int*));
+	this->color[0] = 0;
+	this->color[1] = 0;
+	this->color[2] = 0;
+  this->mat = mat.Identity();
+}
+
+Primitive::~Primitive(){
+	parent = nullptr;
+  free(parent);
+	color = nullptr;
+	free(color);
+}
+
+bool Primitive::isHit(Ray *ray, hit &hit) {
+	hit.t = 0;
+	return false;
+}
+
+Matrix4d Primitive::getLocal() {
+	if(parent == nullptr) {
+    return this->mat;
+	}
+	return this->mat * this->parent->getLocal();
+}
+
+Matrix4d Primitive::getWorld() {
+	if(parent == nullptr) {
+		return this->mat.inverse();
+	}
+
+	return this->parent->getWorld() * this->mat.inverse();
+}
+
+std::ostream &operator <<(std::ostream &os, Primitive &prime) {
+  prime.print(os);
+  return os;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~ Camera ~~~~~~~~~~~~~~~~~~~~~~~~~//
+Camera::Camera() {
+	this->parent = nullptr;
+	this->children = nullptr;
+  this->mat = mat.Identity();
+}
+
+bool Camera::isHit(Ray *ray, hit &hit) {
+  return false;
+}
+void Camera::print(std::ostream &os) {
+	os << "Camera ( Eye:[" << (getWorld() * Vector4d(0,0,0,1)).transpose() << "], Direction:[" << (getWorld()*Vector4d(0,0,1,0)).transpose() <<
+		"], Up:[" << (getWorld()*Vector4d(0,1,0,0)).transpose() << "], Side:[" << (getWorld()*Vector4d(1,0,0,0)).transpose() << "])";
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~ Sphere ~~~~~~~~~~~~~~~~~~~~~~~~~//
+Sphere::Sphere() {
+  this->color[0] = 0;
+  this->color[1] = 0;
+  this->color[2] = 0;
+}
+
+Sphere::Sphere(double *color) {
+	this->color[0] = color[0];
+	this->color[1] = color[1];
+	this->color[2] = color[2];
+}
+
+bool Sphere::isHit(Ray *ray, hit &hit) {
+  hit.color = color;
+  Vector4d eye = ray->origin; 
+  Vector4d direction = ray->direction;
+  direction.normalize();
+  double b = direction.dot(eye);
+  double c = eye.dot(eye) - 1;
+  double disc = b*b-c;
+  std::cout << disc << std::endl;
+  if(disc < 0) {
+    return false;
+  }
+
+  double t0 = -b - sqrt(disc);
+  double t1 = -b + sqrt(disc);
+
+  if(t1 < 0) {
+    return false;
+  }
+
+  if(t0 < 0) {
+    hit.t = t1;
+    return true;
+  }
+
+  if(t1 != t0) {
+    hit.t = std::min(t1, t0);
+    return true; 
+  }
+
+  hit.t = t0;
+  return true;
+}
+
+void Sphere::print(std::ostream &os) {
+	os << "Sphere ( Name: " << name << ", Origin:[" << (getWorld()*Vector4d(0,0,0,1)).transpose() << "], Radius: " 
+		<< (getWorld()*Vector4d(1,0,0,0)).norm() << ", Color: (" << color[0] << "," 
+		<< color[1] << "," << color[2] << "))";
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~ Plane ~~~~~~~~~~~~~~~~~~~~~~~~~//
+bool Plane::isHit(Ray *ray, hit &hit) {
+  hit.color = color;
+  Vector4d eye = ray->origin;
+  Vector4d direction = ray->direction;
+  Vector4d normal = Vector4d(0,1, 0, 0);
+  Vector4d origin = Vector4d(0,0,0,1);
+  double top = (origin-eye).dot(normal);
+  double bottom = direction.dot(normal);
+
+  if(bottom == 0) {
+    return false;
+  }
+
+  double t = top/bottom;
+
+  if(t <= 0){
+    return false;
+  }
+
+  return true;
+}
+
+void Plane::print(std::ostream &os) {
+	os << "Plane ( Name: " << name << ", Origin:[" << (getWorld()*Vector4d(0,0,0,1)).transpose() << "], Normal:["
+		<< (getWorld()*Vector4d(0,1,0,0)).transpose() << "]";
+}
+
+// Ray generation function
+Ray *generateRay(Camera &camera, int &iWidth, int &iHeight, int &i, int &j) {
+  Vector4d eye(0,0,0,1);
+  Vector4d pc(0,0,1,1);
+
+  // Image plane axes (constant, will be changed by camera to world matrix)
+  Vector4d ihat(1,0,0,0);
+  Vector4d jhat(0,1,0,0);
+  
+  Vector4d puv = pc + ((((i + 0.5)/iWidth-0.5))*ihat) + ((((j+0.5)/iHeight)-0.5)*jhat);
+  Vector4d dir = puv - eye;
+
+  Ray *ray = new Ray(eye, dir);
+  ray->origin = camera.mat.inverse() * ray->origin;
+  ray->direction = camera.mat.inverse() * ray->direction;
+  return ray;
+}

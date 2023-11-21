@@ -1,0 +1,64 @@
+Height: 2000;
+Width: 2000;
+FOV: 90;
+Ambient: 0.2;
+Camera {
+  transform:
+   TY: 5, TX: 40, RY: -90;
+}
+
+Point {
+  label: "Point";
+  parent: NONE;
+  intensity: 1;
+  color: (255, 50, 50);
+  transform:
+    TZ: 5, TY: 7;
+}
+
+Plane {
+  label: "Floor";
+  parent: NONE;
+  material:
+    diffuse: (200, 200, 130);
+    specular: (255, 255, 255);
+    shine: 1.0;
+
+  transform:
+    RX: -10;
+}
+
+Mesh {
+  label: "Bunny";
+  parent: NONE;
+  material:
+    diffuse: (125, 200, 155);
+    specular: (150, 255, 150);
+    shine: 4.0;
+
+  vertices:
+    v 1 0 0
+    v 0 1 0
+    v 0 0 1
+    v 0 0 0
+  faces:
+    f 2 4 3
+    f 4 2 1
+    f 3 1 2
+    f 1 3 4
+
+  transform:
+    TY: 5,TZ: 3, TX: -7, RY: -30, SC: 1;
+}
+
+Sphere {
+  label: "Ball";
+  parent: NONE;
+  material:
+    diffuse: (125, 89, 155);
+    specular: (50, 255, 50);
+    shine: 16.0;
+
+  transform:
+  TY: 3;
+}
